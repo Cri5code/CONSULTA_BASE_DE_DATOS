@@ -1,0 +1,82 @@
+--1
+select c.nombre,
+c.rutcliente,
+c.direccion,
+trim(rpad(to_char(c.credito,'L999g999g999'),33,' ')) credito,
+to_char(case 
+   when c.credito >= 1000000 then c.credito * (substr(c.credito,1,2) /100)
+   else c.credito * (substr(c.credito,1,1) /100)
+   end, '$999g999g999') compensacion
+from cliente c
+where c.codcomuna in (1,2,3,8)
+order by 5
+;
+
+--2
+select 
+v.nombre,
+case 
+    when substr(v.nombre, INSTR(v.nombre, ' ') +1, 1 )  between 'A' and 'E'
+    then 'Lunes 24 de Septiembre del 2019'
+    when substr(v.nombre, INSTR(v.nombre, ' ') +1, 1 )  between 'F' and 'j'
+    then 'Lunes 1 de Octubre del 2019'
+    when substr(v.nombre, INSTR(v.nombre, ' ') +1, 1 )  between 'K' and 'N'
+    then 'Lunes 8 de Octubre del 2019'
+    when substr(v.nombre, INSTR(v.nombre, ' ') +1, 1 )  between 'O' and 'S'
+    then 'Lunes 15 de Octubre del 2019'
+    else  'Miércoles 22 de Octubre del 2019'
+    end fecha_examen,
+    to_char(v.fecha_contrato, 'yyyy')||trim(lower(substr(v.nombre, INSTR(v.nombre, ' ') +1, length(v.nombre))))
+    ||length(v.nombre)||'@chalaila.cl' correo
+from vendedor v
+order  by v.nombre desc;
+
+
+--3
+select 
+v.rutvendedor,
+to_char(sysdate, 'yyyy')- to_char(v.fecha_contrato, 'yyyy') años,
+to_char(v.fecha_contrato, 'day dd month "del" yyyy'),
+to_char(v.sueldo_base, 'L999g999g999') sueldo,
+((to_char(sysdate, 'yyyy')- to_char(v.fecha_contrato, 'yyyy'))/ 100 ) * v.sueldo_base bono,
+(1 +((to_char(sysdate, 'yyyy')- to_char(v.fecha_contrato, 'yyyy'))/ 100 )) * v.sueldo_base
+from vendedor v;
+
+--4
+select 
+rutvendedor,
+nombre,
+fecha_contrato,
+sueldo_base,
+to_char(sysdate, 'yyyy')- to_char(fecha_contrato, 'yyyy') años_contrato,
+case 
+    when to_char(sysdate, 'yyyy')- to_char(fecha_contrato, 'yyyy') BETWEEN 1 and 3
+    then sueldo_base * 0.05
+    when to_char(sysdate, 'yyyy')- to_char(fecha_contrato, 'yyyy') BETWEEN 4 and 7
+    then sueldo_base * 0.1
+    when to_char(sysdate, 'yyyy')- to_char(fecha_contrato, 'yyyy') >= 8 
+    then sueldo_base * 0.15
+    end bono
+from vendedor
+order by sueldo_base desc;
+
+--5
+select 
+substr(c.nombre, 1, INSTR(c.nombre, ' ') -1) nombre,
+substr(c.nombre, INSTR(c.nombre, ' ') +1, length(c.nombre)) apellido,
+c.direccion,
+nvl(to_char(c.codcomuna), 'Sin comuna') comuna,
+to_char(substr(c.rutcliente,1, length(c.rutcliente) -2), '09g999g999')
+||substr(c.rutcliente, -2) rut,
+c.credito,
+(SUBSTR(c.rutcliente,1,2 ) / 100) + 1 porcentaje,
+((SUBSTR(c.rutcliente,1,2 ) / 100) + 1) * c.credito incremento
+from cliente c
+order by c.nombre;
+
+
+
+
+
+
+
