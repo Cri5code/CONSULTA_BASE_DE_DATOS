@@ -1,0 +1,65 @@
+select  
+p.nro_propiedad, 
+p.numrut_prop, 
+p.direccion_propiedad,
+p.valor_arriendo,
+to_char(case 
+    when p.valor_arriendo >= 1000000 then (substr(p.valor_arriendo, 1,2) / 100) * p.valor_arriendo
+    else (substr(p.valor_arriendo, 1,1) / 100) * p.valor_arriendo
+    end, 'L999g999g999') compensacion
+from propiedad p
+where p.id_comuna in (86,87,122,123,126)
+order by 3;
+
+
+
+/*
+
+A-B-C-D-E	20 de Septiembre del año_actual
+F-G-H-I-J	4 de Octubre del año_actual
+K-L-M-N	8 de Octubre del año_actual
+O-P-Q-R-S	22 de Octubre del año_actual
+El resto	24 de Octubre del año_actual
+
+
+*/
+select  
+e.nombre_emp||' '||e.appaterno_emp||' '||e.apmaterno_emp nombre,
+extract(year from e.fecing_emp)||lower(substr(e.nombre_emp,1,1)||substr(e.apmaterno_emp,-2))||length(e.apmaterno_emp)||'@corredora.cl' mail,
+case 
+    when substr(e.appaterno_emp, 1,1) BETWEEN 'A' and 'E' then '20 de Septiembre del año_actual '||to_char(sysdate, 'yyyy')
+    when substr(e.appaterno_emp, 1,1) BETWEEN 'F' and 'J' then '4 de Octubre del año_actual '||to_char(sysdate, 'yyyy')
+    when substr(e.appaterno_emp, 1,1) BETWEEN 'K' and 'N' then '8 de Octubre del año_actual '||to_char(sysdate, 'yyyy')
+    when substr(e.appaterno_emp, 1,1) BETWEEN 'O' and 'S' then '22 de Octubre del año_actual '||to_char(sysdate, 'yyyy')
+    else '24 de Octubre del '||to_char(sysdate, 'yyyy')
+    end
+from empleado e
+where e.id_categoria_emp in (1,3)
+order by e.appaterno_emp desc;
+
+
+
+select c.numrut_cli,
+initcap(c.appaterno_cli)||' '||substr(c.apmaterno_cli,1,1)||'. '||initcap(c.nombre_cli) nombre,
+to_char(c.renta_cli, 'L999,999,999'),
+c.fonofijo_cli,
+nvl(to_char(c.celular_cli),'Sin telefono')
+from cliente c
+where c.id_estcivil in (3,4) and c.renta_cli >= 800000 or c.id_estcivil = 1;
+
+
+select 'El empleado '||e.nombre_emp||' '||e.appaterno_emp||' '||e.apmaterno_emp||' estara de cumplaaño feliz el '||
+trim(to_char( e.fecnac_emp, 'dd "de" Month'))||'.'||' cumplira '||(to_char(sysdate, 'yyyy') - to_char(e.fecnac_emp, 'yyyy'))||' años'
+from empleado e
+where to_char(e.fecnac_emp, 'mm') = to_char(add_months(sysdate,1), 'mm');
+
+
+select 
+e.numrut_emp,
+e.nombre_emp||' '||e.appaterno_emp||' '||e.apmaterno_emp nombre,
+(to_char(sysdate, 'yyyy') - to_char(e.fecing_emp, 'yyyy')) años,
+to_char(e.sueldo_emp,'$999g999g999'),
+to_char(round((((to_char(sysdate, 'yyyy') - to_char(e.fecing_emp, 'yyyy')) / 100 ) +1) * e.sueldo_emp),'L999g999g999') salario_reajustado,
+to_char(round(((to_char(sysdate, 'yyyy') - to_char(e.fecing_emp, 'yyyy')) / 100 )  * e.sueldo_emp),'L999g999g999') reajuste
+from empleado e
+order by  6 desc;
