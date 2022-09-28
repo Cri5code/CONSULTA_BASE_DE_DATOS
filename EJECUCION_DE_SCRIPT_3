@@ -1,0 +1,37 @@
+select
+to_char(c.numrun, '999g999g999')||'-'||c.dvrun Run,
+c.pnombre ||' '|| c.apmaterno ||' '|| c.appaterno Nombre_completo,
+to_char(c.fecha_nacimiento, 'dd "de" month') fecha_de_nacimiento,
+sr.direccion||' /'|| r.nombre_region
+from cliente c join comuna co
+on co.cod_comuna =c.cod_comuna and co.cod_provincia = c.cod_provincia and co.cod_region = c.cod_region
+join provincia p on p.cod_provincia = co.cod_provincia and p.cod_region = co.cod_region
+join region r on r.cod_region = co.cod_region
+join sucursal_retail sr on co.cod_comuna= sr.cod_comuna and co.cod_provincia = sr.cod_provincia
+and co.cod_region = sr.cod_region
+where to_char(c.fecha_nacimiento, 'mm') = to_char(ADD_MONTHS(LAST_DAY(sysdate), 0), 'mm')
+and co.cod_region = '&codigo_region'
+order by to_char(c.fecha_nacimiento, 'dd'), c.appaterno desc;
+
+select
+to_char(c.numrun, '999g999g999')||'-'||c.dvrun Run,
+c.pnombre ||' '|| c.apmaterno ||' '|| c.appaterno Nombre_completo,
+sum(ttc.monto_transaccion),
+round((sum(ttc.monto_transaccion)/10000)*250)
+from cliente c join tarjeta_cliente tc on tc.numrun = c.numrun
+join transaccion_tarjeta_cliente ttc on tc.numrun = c.numrun and ttc.nro_tarjeta = tc.nro_tarjeta
+join tipo_transaccion_tarjeta ttt on ttt.cod_tptran_tarjeta = ttc.cod_tptran_tarjeta
+where to_char(ttc.fecha_transaccion,'yyyy')=2021 
+group by c.numrun,c.dvrun,c.pnombre,c.snombre,c.appaterno,c.apmaterno
+order by 4,c.appaterno; 
+
+
+select 
+to_char(ttc.fecha_transaccion,'mmyyyy'),
+ttt.nombre_tptran_tarjeta,
+sum(ttc.monto_total_transaccion)
+
+from transaccion_tarjeta_cliente ttc
+join tipo_transaccion_tarjeta ttt on ttt.cod_tptran_tarjeta = ttc.cod_tptran_tarjeta
+where to_char(ttc.fecha_transaccion,'yyyy')=2021
+GROUP BY to_char(ttc.fecha_transaccion,'mmyyyy'),ttt.nombre_tptran_tarjeta;
